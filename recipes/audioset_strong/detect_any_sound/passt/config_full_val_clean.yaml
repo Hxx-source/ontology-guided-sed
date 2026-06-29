@@ -1,0 +1,180 @@
+DASM_HTSAT: &id001
+  init_kwargs:
+    at_param:
+      at_decoder_layer: 2
+      out_type: sigmoid
+      query: /tmp/dasm_query_407x768.pt
+      query_dim: 768
+      query_projector: true
+    backbone_param:
+      embed_dim: 768
+      lora_config: null
+      pretrain_model_path: weights/htast_mga.pt
+    backbone_upsample_ratio: 15.626
+    class_num: 407
+    cnn_param:
+      activation: cg
+      conv_dropout: 0.5
+      kernel_size:
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      - 3
+      n_in_channel: 1
+      nb_filters:
+      - 16
+      - 16
+      - 32
+      - 32
+      - 64
+      - 64
+      - 128
+      - 128
+      - 256
+      - 256
+      padding:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      pooling:
+      - - 2
+        - 2
+      - - 1
+        - 1
+      - - 2
+        - 2
+      - - 1
+        - 1
+      - - 1
+        - 2
+      - - 1
+        - 2
+      - - 1
+        - 2
+      - - 1
+        - 1
+      - - 1
+        - 2
+      - - 1
+        - 1
+      stride:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+    decoder: conformer
+    decoder_dim: 384
+    decoder_expand_rate: 1
+    decoder_layer_num: 2
+    decoder_pos_emd_len: 500
+    num_heads: 12
+  test_kwargs:
+    encoder_win: false
+    temp_w: 0.5
+  train_kwargs:
+    encoder_win: false
+    temp_w: 1
+  val_kwargs:
+    encoder_win: false
+    temp_w: 0.5
+Maskformer_HTSAT: *id001
+class_loss:
+  kwargs:
+    gamma: 0
+    zeta: 1
+  loss_name: AsymmetricalFocalLoss
+dataset:
+  event_state: assets/metadata/state.json
+  label_dict_path: assets/metadata/labeldict_ontology_audioset_strong.json
+  openset_dur: ./meta/audioset_strong/divided/dropped_val_dur.tsv
+  openset_folder: data/audioset_strong/val_32k_real/
+  openset_tsv: ./meta/audioset_strong/hierarchical/dropped_val.tsv
+  pubeval_dur: null
+  pubeval_folder: null
+  pubeval_tsv: null
+  reweight_path: ./meta/audioset_strong/hierarchical/reweight.tsv
+  strong_folder: data/audioset_strong/train_32k_real/
+  strong_tsv: ./meta/audioset_strong/hierarchical/train.tsv
+  test_dur: assets/metadata/val_dur.clean.tsv
+  test_folder: data/audioset_strong/val
+  test_tsv: assets/metadata/val.clean.tsv
+  val_dur: assets/metadata/val_dur.clean.tsv
+  val_folder: data/audioset_strong/val
+  val_tsv: assets/metadata/val.clean.tsv
+feature:
+  audio_max_len: 10
+  fmax: 14000
+  fmin: 50
+  hopsize: 320
+  n_fft: 1024
+  n_mels: 64
+  net_subsample: 2
+  pred_len: 500
+  sr: 32000
+  win_length: 1024
+generals:
+  finetune_mlm: false
+  load_from_existed_path: false
+  log_level: DEBUG
+  save_folder: runs/passt_full_val
+  save_pred_tsv: true
+  savepsds: true
+  test_on_public_eval: false
+  test_only: true
+  validation_interval: 1
+  warn: false
+opt:
+  param_groups:
+    at_decoder:
+      lr: 0.0003
+      weight_decay: 0.0001
+    backbone:
+      freeze_layer: 0
+      lr: 0
+      weight_decay: 0.0001
+    cnn:
+      lr: 0.0003
+      weight_decay: 0.0001
+    head:
+      lr: 0.0003
+      weight_decay: 0.0001
+    query:
+      lr: 0
+      weight_decay: 0.0001
+    sed_decoder:
+      lr: 0.0003
+      weight_decay: 0.0001
+training:
+  batch_size: 36
+  batch_size_val: 16
+  clip_grad: true
+  median_window: 5
+  num_workers: 0
+  scheduler:
+    exponent: -1.5
+    lr_warmup_epochs: 2
+    lr_warmup_rate: 0.1
+    n_epochs: 8
+    n_epochs_cut: 2
+    scheduler_name: ExponentialDown
+  seed: 21
+  w_AT: 0.5

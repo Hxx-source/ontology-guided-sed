@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.DS_Store
+.idea/
+.vscode/
+
+# Local data and experiment outputs
+data/
+runs/
+logs/
+lightning_logs/
+events.out.tfevents*
+
+# Generated evaluation artifacts
+pred_events.tsv
+val_pred_events.tsv
+psds/
+
+# Keep checkpoints public through Git LFS, not normal Git blobs.
+*.tmp
+# Python/test/cache artifacts
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+# Local pretrained assets and generated files
+pretrained_models/
+outputs/
+*.log

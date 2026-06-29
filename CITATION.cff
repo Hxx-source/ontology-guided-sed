@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated paper and repository."
+title: "ontology-guided-sed: Ontology-Guided Knowledge Transfer and Class-Adaptive Post-Processing for Sound Event Detection"
+version: "0.1.0"
+date-released: "2026-06-29"
+authors:
+  - family-names: Huang
+    given-names: Xingxi
+  - family-names: Xu
+    given-names: Dongxing
+  - family-names: Long
+    given-names: Yanhua
+license: "MIT"
+preferred-citation:
+  type: article
+  title: "Ontology-Guided Knowledge Transfer and Class-Adaptive Post-Processing for Open-Vocabulary Sound Event Detection"
+  authors:
+    - family-names: Huang
+      given-names: Xingxi
+    - family-names: Xu
+      given-names: Dongxing
+    - family-names: Long
+      given-names: Yanhua
+  year: 2026
