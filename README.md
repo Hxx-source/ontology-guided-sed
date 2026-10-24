@@ -1,4 +1,4 @@
-# DASM Inference-Only Release
+# ontology-guided-sed
 
 This folder contains the frozen OCL+CAW DASM checkpoint and CAMF postprocessing
 needed to detect 407 AudioSet-Strong event classes. It does not include training
@@ -19,7 +19,7 @@ python -m pip install -r requirements.txt
 ## Inference
 
 ```bash
-cd ontology-guided-sed-inference
+cd ontology-guided-sed
 CUDA_VISIBLE_DEVICES=0 python infer.py \
   --input /path/to/audio.wav --output results/events.tsv --device cuda:0
 ```
