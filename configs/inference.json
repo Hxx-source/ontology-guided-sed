@@ -1,0 +1,141 @@
+{
+  "model": {
+    "init_kwargs": {
+      "at_param": {
+        "at_decoder_layer": 2,
+        "out_type": "sigmoid",
+        "query": "assets/queries/dasm_query_407x768.pt",
+        "query_dim": 768,
+        "query_projector": true
+      },
+      "backbone_param": {
+        "embed_dim": 768,
+        "lora_config": null,
+        "pretrain_model_path": null
+      },
+      "backbone_upsample_ratio": 15.626,
+      "class_num": 407,
+      "cnn_param": {
+        "activation": "cg",
+        "conv_dropout": 0.5,
+        "kernel_size": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "n_in_channel": 1,
+        "nb_filters": [
+          16,
+          16,
+          32,
+          32,
+          64,
+          64,
+          128,
+          128,
+          256,
+          256
+        ],
+        "padding": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "pooling": [
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "stride": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "decoder": "conformer",
+      "decoder_dim": 384,
+      "decoder_expand_rate": 1,
+      "decoder_layer_num": 2,
+      "decoder_pos_emd_len": 500,
+      "num_heads": 12
+    },
+    "test_kwargs": {
+      "encoder_win": false,
+      "temp_w": 0.5
+    },
+    "train_kwargs": {
+      "encoder_win": false,
+      "temp_w": 1
+    },
+    "val_kwargs": {
+      "encoder_win": false,
+      "temp_w": 0.5
+    }
+  },
+  "audio": {
+    "sample_rate": 32000,
+    "clip_seconds": 10,
+    "hop_samples": 320,
+    "net_subsample": 2,
+    "pred_len": 500
+  },
+  "default_threshold": 0.5
+}

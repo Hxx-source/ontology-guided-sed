@@ -38,12 +38,10 @@ class DASM_HTSAT(DASM):
 
     def _init_transformer_backbone(self, backbone_param):
         self.backbone = create_htsat_model(CLAPAudioCfp)
-        self.backbone.load_state_dict(
-            torch.load(
-                backbone_param["pretrain_model_path"],
-                map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        if backbone_param["pretrain_model_path"] is not None:
+            self.backbone.load_state_dict(
+                torch.load(backbone_param["pretrain_model_path"], map_location="cpu")
             )
-        )
 
     def f_pool(self, passt_out_dict):
         raise NotImplementedError("Method 'f_pool' is not supported by DASM_HTAST")
@@ -59,6 +57,7 @@ class DASM_HTSAT(DASM):
         query: Union[torch.Tensor, list] = None,
         query_type: Optional[Literal['text', 'audio']] = None,
         tgt_mask=None,
+        return_intermediates=False,
     ):
         other_dict = {}
         # shape of input (batch_size, 1, time_steps, mel_bins)
@@ -99,7 +98,11 @@ class DASM_HTSAT(DASM):
 
         if tgt_mask is not None and tgt_mask.ndim == 3:
             tgt_mask = tgt_mask[0, :, :]
-        other_dict["at_out"], mask_feat = self.at_branch(at_feat, query, query_type, tgt_mask)
+        (
+            other_dict["at_out"],
+            mask_feat,
+            projected_query,
+        ) = self.at_branch(at_feat, query, query_type, tgt_mask)
         # mask language model
         if self.mlm_dict is not None:
             other_dict["frame_before_mask"] = x
@@ -116,8 +119,78 @@ class DASM_HTSAT(DASM):
         # localization
         x = self.sed_head(x)
         mask_embedding = self.mask_embedding_layer(mask_feat)
+        if return_intermediates:
+            other_dict["localization_frame_feat"] = x
+            other_dict["localization_query_feat"] = mask_embedding
         x = torch.einsum("bqc, bct -> bqt", mask_embedding, x.transpose(1, 2)).transpose(1, 2)
-        sed_out = torch.sigmoid(x / temp_w) * other_dict["at_out"].unsqueeze(1)  # with clip-level prior
+        frame_prob = torch.sigmoid(x / temp_w)
+        if return_intermediates or (
+            self.gate_power_enabled
+            and self.gate_power_mode in (
+                "router", "framewise_power", "query_beta_expert"
+            )
+        ):
+            other_dict["frame_prob_before_clip"] = frame_prob
+        if self.gate_power_enabled:
+            clip_gate = other_dict["at_out"].clamp(min=1e-7, max=1.0)
+            if self.gate_power_mode == "router":
+                router_prob = self.get_evidence_router(
+                    frame_prob, clip_gate, pad_mask=pad_mask
+                )
+                router_prob = router_prob * self.gate_repair_mask.to(
+                    dtype=router_prob.dtype
+                ).unsqueeze(0)
+                if self.router_hard_inference:
+                    router_weight = (router_prob > self.router_threshold).to(
+                        router_prob.dtype
+                    )
+                else:
+                    router_weight = router_prob
+                gated_prob = frame_prob * clip_gate.unsqueeze(1)
+                sed_out = gated_prob + router_weight.unsqueeze(1) * (frame_prob - gated_prob)
+                other_dict["router_prob"] = router_prob
+                other_dict["router_weight"] = router_weight
+            elif self.gate_power_mode == "dynamic":
+                gate_power = self.get_dynamic_gate_power(
+                    frame_prob, clip_gate, pad_mask=pad_mask
+                )
+                gate_exponent = gate_power.unsqueeze(1)
+                other_dict["gate_power"] = gate_power
+                sed_out = frame_prob * clip_gate.unsqueeze(1).pow(gate_exponent)
+            elif self.gate_power_mode == "framewise_power":
+                gate_power = self.get_framewise_gate_power(
+                    frame_prob, clip_gate, pad_mask=pad_mask
+                )
+                baseline_gated = frame_prob * clip_gate.unsqueeze(1)
+                other_dict["gate_power"] = gate_power
+                other_dict["baseline_gated_prob"] = baseline_gated
+                sed_out = frame_prob * clip_gate.unsqueeze(1).pow(gate_power)
+            elif self.gate_power_mode == "query_beta_expert":
+                (
+                    expert_logits,
+                    expert_weights,
+                    expert_gates,
+                    mixed_gate,
+                    expected_beta,
+                ) = self.get_query_beta_expert(
+                    frame_prob, clip_gate, projected_query, pad_mask=pad_mask
+                )
+                other_dict["expert_logits"] = expert_logits
+                other_dict["expert_weights"] = expert_weights
+                other_dict["expert_gates"] = expert_gates
+                other_dict["mixed_clip_gate"] = mixed_gate
+                other_dict["expected_gate_power"] = expected_beta
+                other_dict["baseline_gated_prob"] = (
+                    frame_prob * clip_gate.unsqueeze(1)
+                )
+                sed_out = frame_prob * mixed_gate.unsqueeze(1)
+            else:
+                gate_power = self.get_gate_power()
+                gate_exponent = gate_power.view(1, 1, -1)
+                other_dict["gate_power"] = gate_power
+                sed_out = frame_prob * clip_gate.unsqueeze(1).pow(gate_exponent)
+        else:
+            sed_out = frame_prob * other_dict["at_out"].unsqueeze(1)  # with clip-level prior
         # sed_out = torch.sigmoid(x / temp_w) # without clip-level prior
 
         if pad_mask is not None:
