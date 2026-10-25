@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8f7">
+  <meta name="description" content="DASM open-vocabulary sound event detection: listen to real model predictions, inspect event timelines, and test thresholds.">
+  <title>DASM | Sound Event Demos</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/lucide.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" aria-label="DASM">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+      <span class="brand-name">DASM</span>
+      <span class="brand-divider"></span>
+      <span class="brand-context" data-i18n="brandContext">声音事件检测演示</span>
+    </div>
+    <div class="topbar-right">
+      <span class="model-badge">407 <span data-i18n="classes">类</span></span>
+      <span class="model-badge model-badge-muted">OCL + CAW + CAMF</span>
+      <div class="segmented language-control" role="group" aria-label="Language">
+        <button type="button" data-lang="zh" class="active" aria-pressed="true">中文</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sample-sidebar" aria-label="Demo recordings">
+      <div class="sidebar-heading">
+        <div class="section-kicker" data-i18n="listenAndInspect">LISTEN &amp; INSPECT</div>
+        <h1 data-i18n="demoList">演示音频</h1>
+        <p data-i18n="sidebarIntro">真实推理 · 开放授权音频</p>
+      </div>
+      <div class="sidebar-group-title" data-i18n="recordings">原始录音</div>
+      <div id="sample-list" class="sample-list" role="list"></div>
+      <div class="sidebar-foot">
+        <span class="status-dot"></span><span data-i18n="frozenModel">冻结权重 · 无服务端推理</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div id="loading" class="loading-state" role="status" aria-live="polite" data-i18n="loading">正在加载示例…</div>
+      <div id="error" class="error-state" role="alert" hidden></div>
+      <div id="content" hidden>
+        <div class="case-head">
+          <div>
+            <div class="eyebrow-row"><span id="case-index" class="case-index">01 / 07</span><span id="case-type" class="case-type"></span></div>
+            <h2 id="case-title"></h2>
+            <p id="case-description" class="case-description"></p>
+          </div>
+          <div class="case-head-actions">
+            <span id="duration-pill" class="duration-pill"></span>
+            <button id="export-button" type="button" class="command-button" title="Download current events as TSV">
+              <i data-lucide="download" aria-hidden="true"></i><span data-i18n="export">导出 TSV</span>
+            </button>
+          </div>
+        </div>
+
+        <section class="audio-section" aria-label="Audio and spectrogram">
+          <div class="section-line"><h3 data-i18n="recording">音频</h3><span id="time-label" class="mono">0.00 / 0.00 s</span></div>
+          <div id="waveform-wrap" class="waveform-wrap seek-surface" title="Click to seek" role="button" tabindex="0" aria-label="Seek in audio waveform">
+            <canvas id="waveform" aria-hidden="true"></canvas>
+            <div class="media-playhead" aria-hidden="true"></div>
+            <div class="reference-band" aria-hidden="true" hidden></div>
+          </div>
+          <audio id="audio-player" controls preload="metadata"></audio>
+          <div class="spectrogram-header"><span data-i18n="spectrogram">梅尔声谱图</span><span class="mono">0–16 kHz</span></div>
+          <div id="spectrogram-wrap" class="spectrogram-wrap seek-surface" title="Click to seek" role="button" tabindex="0" aria-label="Seek in spectrogram">
+            <img id="spectrogram" alt="Mel spectrogram of the selected audio recording">
+            <div class="media-playhead" aria-hidden="true"></div>
+            <div class="reference-band" aria-hidden="true" hidden></div>
+          </div>
+          <div class="time-ruler"><span>0 s</span><span id="half-time">5 s</span><span id="full-time">10 s</span></div>
+        </section>
+
+        <section class="result-section" aria-label="Detection results">
+          <div class="result-heading">
+            <div>
+              <div class="section-kicker" data-i18n="modelOutput">MODEL OUTPUT</div>
+              <h3 data-i18n="detections">事件检测</h3>
+            </div>
+            <div class="threshold-control">
+              <label for="threshold" data-i18n="threshold">阈值</label>
+              <input id="threshold" type="range" min="0.05" max="0.95" step="0.01" value="0.50">
+              <output id="threshold-value" for="threshold">0.50</output>
+              <button id="reset-threshold" type="button" class="quiet-button" data-i18n="reset" title="Reset threshold">重置</button>
+            </div>
+          </div>
+
+          <div class="view-toolbar">
+            <div class="segmented" role="group" aria-label="Result view">
+              <button type="button" data-view="timeline" class="active" aria-pressed="true" data-i18n="timeline">时间轴</button>
+              <button type="button" data-view="events" aria-pressed="false" data-i18n="eventList">事件列表</button>
+            </div>
+            <div class="view-tools">
+              <div class="segmented" role="group" aria-label="Class scope">
+                <button type="button" data-scope="detected" class="active" aria-pressed="true" data-i18n="detected">已检出</button>
+                <button type="button" data-scope="all" aria-pressed="false" data-i18n="allClasses">全部类别</button>
+              </div>
+              <input id="class-search" type="search" data-i18n-placeholder="searchClass" placeholder="搜索类别" aria-label="Search class labels">
+            </div>
+          </div>
+          <div class="result-count"><span id="result-summary"></span><span id="visible-count"></span></div>
+
+          <div id="timeline-view">
+            <div class="track-head"><span data-i18n="classLabel">类别</span><span data-i18n="time">时间</span></div>
+            <div id="tracks" class="tracks"></div>
+            <p id="track-empty" class="empty-message" hidden></p>
+            <div class="score-panel">
+              <div class="section-line"><h4 id="score-title"></h4><span data-i18n="frameProbability">帧概率 · CAMF 后</span></div>
+              <canvas id="score-canvas" aria-label="Selected class frame probability curve"></canvas>
+              <div class="score-axis"><span>0</span><span id="score-half-time">5 s</span><span id="score-full-time">10 s</span></div>
+            </div>
+          </div>
+
+          <div id="events-view" hidden>
+            <table class="events-table">
+              <thead><tr><th data-i18n="start">开始</th><th data-i18n="end">结束</th><th data-i18n="classLabel">类别</th></tr></thead>
+              <tbody id="events-body"></tbody>
+            </table>
+            <p id="events-empty" class="empty-message" hidden></p>
+          </div>
+        </section>
+
+        <section class="case-notes" aria-label="Case notes and audio sources">
+          <div>
+            <div class="section-kicker" data-i18n="readingResult">HOW TO READ THIS CASE</div>
+            <h3 data-i18n="caseNotes">案例说明</h3>
+            <p id="case-note"></p>
+            <p id="reference-note" class="reference-note" hidden></p>
+          </div>
+          <div>
+            <div class="section-kicker" data-i18n="audioProvenance">AUDIO PROVENANCE</div>
+            <h3 data-i18n="sources">音频来源</h3>
+            <div id="sources-list" class="sources-list"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <span data-i18n="footerNote">本页展示冻结模型的预计算推理结果，不在浏览器运行模型；示例经过挑选，不代表总体性能。</span>
+    <a href="../README.md" id="readme-link" data-i18n="inferenceInstructions">推理命令</a>
+  </footer>
+</body>
+</html>

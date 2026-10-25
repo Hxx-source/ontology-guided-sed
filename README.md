@@ -4,6 +4,10 @@ This folder contains the frozen OCL+CAW DASM checkpoint and CAMF postprocessing
 needed to detect 407 AudioSet-Strong event classes. It does not include training
 data, training code, validation labels, or PSDS evaluation.
 
+## Interactive demo
+
+Explore the seven precomputed sound event examples in the [browser demo](https://hxx-source.github.io/ontology-guided-sed/). The static page lives in docs/ and requires no local Python setup.
+
 ## Setup
 
 Tested with Python 3.8, PyTorch 2.0.1+cu118, and the versions in
