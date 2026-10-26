@@ -17,8 +17,8 @@ function renderChart(stages) {
     const subtitle = ['Baseline', 'Ontology-guided consistency', 'Class-wise adaptive weighting', 'Class-adaptive median filtering'][index];
     return `<div class="stage-row ${index === 3 ? 'stage-final' : ''}">
       <div class="stage-identity"><span class="stage-index">A${index}</span><div><strong>${title}</strong><small>${subtitle}</small></div></div>
-      <div class="stage-measure"><div class="measure-header"><span>OVERALL PSDS</span><strong>${stage.overall.toFixed(2)}%</strong></div><div class="measure-rail"><i style="width:${stage.overall / 55 * 100}%"></i></div><small>${previous ? `${signed(gain)} pp from A${index - 1}` : 'Reference'}</small></div>
-      <div class="stage-measure rare-measure"><div class="measure-header"><span>RARE-CLASS PSDS</span><strong>${stage.rare.toFixed(2)}%</strong></div><div class="measure-rail"><i style="width:${stage.rare / 45 * 100}%"></i></div><small>${previous ? `${signed(rareGain)} pp from A${index - 1}` : 'Reference'}</small></div>
+      <div class="stage-measure"><div class="measure-header"><span>OVERALL PSDS</span><strong>${stage.overall.toFixed(2)}%</strong></div><div class="measure-rail"><i style="width:${stage.overall / 55 * 100}%"></i></div><small>${previous ? `${signed(gain)}% from A${index - 1}` : 'Reference'}</small></div>
+      <div class="stage-measure rare-measure"><div class="measure-header"><span>RARE-CLASS PSDS</span><strong>${stage.rare.toFixed(2)}%</strong></div><div class="measure-rail"><i style="width:${stage.rare / 45 * 100}%"></i></div><small>${previous ? `${signed(rareGain)}% from A${index - 1}` : 'Reference'}</small></div>
     </div>`;
   }).join('');
 }
@@ -57,7 +57,7 @@ function renderCase(index) {
   });
   const beforeF1 = item.temporal_metrics[item.before].f1;
   const afterF1 = item.temporal_metrics[item.after].f1;
-  const classPsds = item.class_psds ? `<div class="case-stat"><small>CLASS PSDS · VALIDATION</small><strong>${item.class_psds.before.toFixed(2)} → ${item.class_psds.after.toFixed(2)}%</strong><span class="gain">${signed(item.class_psds.delta)} pp</span></div>` : '';
+  const classPsds = item.class_psds ? `<div class="case-stat"><small>CLASS PSDS · VALIDATION</small><strong>${item.class_psds.before.toFixed(2)} → ${item.class_psds.after.toFixed(2)}%</strong><span class="gain">${signed(item.class_psds.delta)}%</span></div>` : '';
   const windowStat = item.method === 'CAMF' ? `<div class="case-stat"><small>MEDIAN WINDOW · THIS CLASS</small><strong>5 → ${item.adaptive_window_frames} frames</strong><span>0.10 → ${(item.adaptive_window_frames * .02).toFixed(2)} s</span></div>` : '';
   document.getElementById('evidence-card').innerHTML = `
     <div class="case-intro"><div><span class="case-kicker">CASE 0${index + 1} <i>/</i> ${item.method}</span><h3>${escapeHtml(item.title.en)}</h3><p>${escapeHtml(item.description.en)}</p></div><span class="class-badge">TARGET CLASS <strong>${escapeHtml(item.label)}</strong></span></div>
