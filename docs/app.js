@@ -17,7 +17,7 @@ const state = {
 
 const copy = {
   zh: {
-    brandContext: "声音事件检测演示", classes: "类", listenAndInspect: "LISTEN & INSPECT",
+    brandContext: "论文方法与声音事件检测", classes: "类", listenAndInspect: "LISTEN & INSPECT",
     demoList: "演示音频", sidebarIntro: "真实推理 · 开放授权音频", recordings: "原始录音",
     frozenModel: "冻结权重 · 无服务端推理", loading: "正在加载示例…", export: "导出 TSV",
     recording: "音频", spectrogram: "梅尔声谱图", modelOutput: "MODEL OUTPUT",
@@ -38,7 +38,7 @@ const copy = {
     selectedClass: "类别帧概率", missed: "漏检", detectedNote: "检出",
   },
   en: {
-    brandContext: "Sound event detection demos", classes: "classes", listenAndInspect: "LISTEN & INSPECT",
+    brandContext: "Research method & sound detection", classes: "classes", listenAndInspect: "LISTEN & INSPECT",
     demoList: "Demo audio", sidebarIntro: "Actual inference · openly licensed audio", recordings: "Recordings",
     frozenModel: "Frozen checkpoint · no server inference", loading: "Loading example…", export: "Export TSV",
     recording: "Audio", spectrogram: "Mel spectrogram", modelOutput: "MODEL OUTPUT",

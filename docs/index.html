@@ -4,17 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f8f7">
-  <meta name="description" content="DASM open-vocabulary sound event detection: listen to real model predictions, inspect event timelines, and test thresholds.">
-  <title>DASM | Sound Event Demos</title>
+  <meta name="description" content="Ontology-guided open-vocabulary sound event detection: explore OCL, CAW and CAMF with paper results and real model predictions.">
+  <title>Ontology-Guided SED | Research Demo</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="paper.css">
   <script src="vendor/lucide.min.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="paper.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand" aria-label="DASM">
+    <div class="brand" aria-label="Ontology-Guided SED">
       <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
-      <span class="brand-name">DASM</span>
+      <span class="brand-name">OG-SED</span>
       <span class="brand-divider"></span>
       <span class="brand-context" data-i18n="brandContext">声音事件检测演示</span>
     </div>
@@ -28,6 +30,89 @@
     </div>
   </header>
 
+  <div class="paper-nav-wrap">
+    <nav class="paper-nav" aria-label="Research sections">
+      <a href="#paper-overview" data-paper-key="navOverview">研究概览</a>
+      <a href="#benchmark" data-paper-key="navEvidence">验证结果</a>
+      <a href="#method" data-paper-key="navMethod">方法</a>
+      <a href="#audio-compare" data-paper-key="navCompare">音频对照</a>
+      <a href="#demos" data-paper-key="navExplore">完整试听</a>
+    </nav>
+  </div>
+
+  <section id="paper-overview" class="paper-overview paper-container">
+    <div class="paper-eyebrow">RESEARCH DEMO <span>·</span> AUDIOSET-STRONG <span>·</span> 407 CLASSES</div>
+    <h1>Ontology-Guided Sound Event Detection</h1>
+    <p class="paper-subtitle" data-paper-key="subtitle">面向开放词汇声音事件检测的层级知识迁移与类别自适应后处理</p>
+    <p class="paper-lede" data-paper-key="lede">以 DASM 为基础，让数据稀缺的子类借助可靠父类改善查询表示，并让每个类别按自身事件时长选择平滑窗口。下方把论文结果、训练关系和真实音频预测分开呈现。</p>
+    <div class="paper-byline">Xingxi Huang · Dongxing Xu · Yanhua Long <span data-paper-key="draft">研究稿件演示</span></div>
+    <div class="paper-metrics" aria-label="AudioSet-Strong validation results">
+      <div><strong>49.73 <span>→</span> 51.26</strong><span data-paper-key="overallMetric">整体 PSDS1 (%)</span><small>+1.53 pp</small></div>
+      <div><strong>37.50 <span>→</span> 40.68</strong><span data-paper-key="rareMetric">稀缺类别 PSDS1 (%)</span><small>+3.18 pp</small></div>
+      <div><strong>60 <span>→</span> 59</strong><span data-paper-key="pairMetric">可靠父子关系 → 受约束子类</span><small data-paper-key="pairMetricNote">支持一个子类对应多个父类</small></div>
+    </div>
+  </section>
+
+  <section id="benchmark" class="paper-band paper-band-alt">
+    <div class="paper-container">
+      <div class="paper-section-top">
+        <div><span class="paper-index">01 / EVIDENCE</span><h2 data-paper-key="benchmarkTitle">每一步带来了什么</h2></div>
+        <div class="segmented paper-metric-switch" role="group" aria-label="PSDS subset">
+          <button type="button" data-metric="overall" class="active" aria-pressed="true" data-paper-key="overall">整体</button>
+          <button type="button" data-metric="common" aria-pressed="false" data-paper-key="common">常见类</button>
+          <button type="button" data-metric="rare" aria-pressed="false" data-paper-key="rare">稀缺类</button>
+        </div>
+      </div>
+      <div id="ablation-chart" class="ablation-chart" aria-label="Ablation study PSDS bar chart"></div>
+      <p class="paper-caption" data-paper-key="benchmarkCaption">AudioSet-Strong 验证集，PSDS1 设置；仅 381 个类别有有效逐类标注。百分数来自论文表 I，不是本页精选音频的得分。</p>
+    </div>
+  </section>
+
+  <section id="method" class="paper-band">
+    <div class="paper-container">
+      <div class="paper-section-top"><div><span class="paper-index">02 / METHOD</span><h2 data-paper-key="methodTitle">两条互补的改进路径</h2></div></div>
+      <div class="method-steps">
+        <div><b>01 · OCL</b><h3 data-paper-key="oclTitle">父类作为语义锚点</h3><p data-paper-key="oclBody">从 AudioSet 本体中筛选可靠父子关系，只在训练时用层级一致性约束查询表示。父类与子类可以同时检出，不是互斥分类。</p></div>
+        <div><b>02 · CAW</b><h3 data-paper-key="cawTitle">逐关系调整迁移强度</h3><p data-paper-key="cawBody">依据子/父训练时长比、父类支持量及查询相似度，为每条关系设置不同权重；一个子类有多个父类时分别计算。</p></div>
+        <div><b>03 · CAMF</b><h3 data-paper-key="camfTitle">逐类别选择时间尺度</h3><p data-paper-key="camfBody">从训练事件时长分布估计每类中值滤波窗口：短促事件保留瞬态，持续事件抑制碎片化。无需新增推理参数。</p></div>
+      </div>
+      <div class="paper-divider"></div>
+      <div class="explorer-heading"><div><h3 data-paper-key="pairExplorerTitle">可靠父子关系</h3><p data-paper-key="pairExplorerIntro">选一个子类，查看代码实际使用的父类、训练时长和关系权重。</p></div><label class="paper-select-label"><span data-paper-key="childLabel">子类</span><select id="paper-child-select"></select></label></div>
+      <div id="pair-explorer" class="pair-explorer"></div>
+      <div id="rare-ablation" class="rare-ablation"></div>
+      <p class="paper-caution" data-paper-key="formulaCaution">实现核对：论文草稿的 CAW 公式仅写时长比；当前发布配置还乘了父类支持量与相似度区间权重。这里显示的是代码中的实际权重，正式发表前应统一论文与代码表述。</p>
+    </div>
+  </section>
+
+  <section id="camf" class="paper-band paper-band-alt">
+    <div class="paper-container">
+      <div class="paper-section-top"><div><span class="paper-index">03 / POST-PROCESSING</span><h2 data-paper-key="windowTitle">一类一个时间窗口</h2></div><label class="paper-select-label"><span data-paper-key="windowClass">查看类别</span><select id="paper-window-select"></select></label></div>
+      <div class="window-comparison">
+        <div class="window-visual"><div id="window-fixed"></div><div id="window-adaptive"></div></div>
+        <div id="window-detail" class="window-detail"></div>
+      </div>
+      <p class="paper-caption" data-paper-key="windowCaption">窗口取自训练事件时长统计。这里的 17 帧固定窗口用于同口径音频演示；论文 PSDS 数字来自独立的验证流程，不由这些示例计算。</p>
+    </div>
+  </section>
+
+  <section id="audio-compare" class="paper-band">
+    <div class="paper-container">
+      <div class="paper-section-top"><div><span class="paper-index">04 / LISTEN & COMPARE</span><h2 data-paper-key="compareTitle">同一段声音，三个处理阶段</h2></div></div>
+      <div class="compare-controls"><label class="paper-select-label"><span data-paper-key="recordingLabel">录音</span><select id="paper-audio-select"></select></label><label class="paper-select-label"><span data-paper-key="compareClass">类别</span><select id="paper-audio-class"></select></label><label class="paper-range-label"><span data-paper-key="compareThreshold">阈值</span><input id="paper-threshold" type="range" min="0.05" max="0.95" step="0.01" value="0.50"><output id="paper-threshold-value">0.50</output></label></div>
+      <audio id="paper-audio-player" controls preload="metadata"></audio>
+      <div id="paper-spectrogram-wrap" class="paper-spectrogram-wrap"><img id="paper-spectrogram" alt="Spectrogram of selected demo audio"><div id="paper-reference-band" class="reference-band" hidden></div><div id="paper-playhead" class="media-playhead"></div></div>
+      <div class="paper-ruler"><span>0 s</span><span id="paper-half-time"></span><span id="paper-full-time"></span></div>
+      <div id="paper-stage-rows" class="paper-stage-rows"></div>
+      <div class="compare-curve-head"><strong id="paper-curve-title"></strong><div class="segmented" role="group" aria-label="Curve stage"><button type="button" data-paper-stage="a0_fixed" aria-pressed="false">A0</button><button type="button" data-paper-stage="a2_fixed" aria-pressed="false">A2</button><button type="button" data-paper-stage="a3" class="active" aria-pressed="true">A3</button></div></div>
+      <canvas id="paper-score-canvas" aria-label="Matched frame probability curve"></canvas>
+      <p id="paper-case-note" class="paper-case-note"></p>
+      <p class="paper-caption" data-paper-key="compareCaption">A0：原 DASM + 固定窗口；A2：OCL+CAW 权重 + 同一固定窗口；A3：同一 OCL+CAW 权重 + CAMF。均使用同一音频、查询和阈值。精选案例不是因果证明或基准评测。</p>
+    </div>
+  </section>
+
+  <section id="demos" class="paper-band paper-demos-title">
+    <div class="paper-container"><span class="paper-index">05 / FULL INSPECTION</span><h2 data-paper-key="demosTitle">完整试听与 407 类检视</h2><p data-paper-key="demosIntro">继续查看波形、全部类别时间轴，并导出当前阈值下的事件 TSV。</p></div>
+  </section>
   <div class="app-shell">
     <aside class="sample-sidebar" aria-label="Demo recordings">
       <div class="sidebar-heading">
