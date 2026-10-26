@@ -6,7 +6,7 @@ data, training code, validation labels, or PSDS evaluation.
 
 ## Interactive demo
 
-Explore the seven precomputed sound event examples in the [browser demo](https://hxx-source.github.io/ontology-guided-sed/). The static page lives in docs/ and requires no local Python setup.
+The interactive demo is currently under development. A link will be added here when it is ready.
 
 ## Setup
 
